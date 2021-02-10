@@ -1,6 +1,7 @@
 import logging
 
 import config
+import csv_import
 import package_logger
 
 from symphony.bot_client import BotClient
@@ -12,12 +13,15 @@ def run_main():
 
     user_list = sym_client.Admin.list_users()
 
+    csv_path = 'C:/Users/Kevin/Downloads/public_pod_disable_users_2021-02-12.csv'
+    userIds_from_csv = csv_import.loader.import_csv_users(csv_path)
+
     users_for_update = {}
 
     for user in user_list:
-        if user.type == 'NORMAL' and user.domain == 'symphony.com':
+        if user.id in userIds_from_csv:
             payload = {
-                "division": 'Symphony'
+
             }
             users_for_update[user.id] = payload
 

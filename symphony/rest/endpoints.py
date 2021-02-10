@@ -100,6 +100,9 @@ def set_presence():
 def update_user(user_id):
     return f'pod/v1/admin/user/{user_id}/update'
 
+def update_user_status(user_id):
+    return f'pod/v1/admin/user/{user_id}/status/update'
+
 
 def update_user_features(user_id):
     return f'pod/v1/admin/user/{user_id}/features/update'
