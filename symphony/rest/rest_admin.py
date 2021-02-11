@@ -40,7 +40,7 @@ class Admin(APIBase):
         ep = self.get_endpoint(sym_ep.update_user(user_id))
         return self.post(ep, payload)
 
-    def update_user_status(self, user_id, disable_user: bool) -> str:
+    def update_user_status(self, user_id, disable_user: bool=True) -> str:
         """
         :param user_id:
             Symphony user id either as a string or integer
@@ -57,7 +57,7 @@ class Admin(APIBase):
             "status": status_str
         }
 
-        result_status = jsonpickle.decode(self.post(ep, user_id), payload)
+        result_status = self.post(ep, payload)
 
         if result_status:
             return result_status['message']

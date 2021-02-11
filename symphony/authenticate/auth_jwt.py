@@ -1,5 +1,6 @@
 import jsonpickle
 import jwt
+import logging
 import requests
 
 from datetime import datetime, timedelta
@@ -9,20 +10,20 @@ from symphony.rest import endpoints
 
 def generate_jwt_from_keyfile(bot_username: str, private_key_path: str, use_legacy_crypto: bool = False):
 
-    with open(Path(private_key_path), 'r') as keyfile:
+    with open(Path(private_key_path), 'rb') as keyfile:
         private_key = keyfile.read()
 
     return generate_jwt(bot_username, private_key, use_legacy_crypto)
 
 
-def generate_jwt(bot_username: str, private_key: str, use_legacy_crypto: bool = False):
+def generate_jwt(bot_username: str, private_key: bytes, use_legacy_crypto: bool = False):
     # GAE does not allow installation of the cryptography module
     # Thus, I need to provide a way to fall back to the legacy modules
     # required by pyJWT
-    if use_legacy_crypto:
-        from jwt.contrib.algorithms.pycrypto import RSAAlgorithm
-        jwt.unregister_algorithm('RS512')
-        jwt.register_algorithm('RS512', RSAAlgorithm(RSAAlgorithm.SHA512))
+    # if use_legacy_crypto:
+    #     from jwt.contrib.algorithms.pycrypto import RSAAlgorithm
+    #     jwt.unregister_algorithm('RS512')
+    #     jwt.register_algorithm('RS512', RSAAlgorithm(RSAAlgorithm.SHA512))
 
     header = {
         "typ": "JWT",
@@ -61,14 +62,16 @@ def authenticate_bot_by_keyfile(base_url: str, bot_username: str, private_key_pa
     return authenticate_bot(base_url, jwt_token)
 
 
-def authenticate_bot_by_keystring(base_url: str, bot_username: str, private_key: str):
+def authenticate_bot_by_keystring(base_url: str, bot_username: str, private_key):
     jwt_token = generate_jwt(bot_username, private_key)
     return authenticate_bot(base_url, jwt_token)
 
 
 def authenticate_bot(base_url: str, jwt_token):
     jwt_payload = {
-        "token": jwt_token.decode('utf-8')
+        # PyJWT changed their method signature to return a string
+        # No longer need to have .decode('utf-8')
+        "token": jwt_token
     }
 
     session_ep = base_url + endpoints.session_auth_jwt()
@@ -77,5 +80,7 @@ def authenticate_bot(base_url: str, jwt_token):
     session_token = get_auth_token(session_ep, jwt_payload)
     km_token = get_auth_token(km_ep, jwt_payload)
     expires = datetime.now() + timedelta(days=7)
+
+    logging.info(f'Session Token: {session_token}')
 
     return session_token, km_token, expires

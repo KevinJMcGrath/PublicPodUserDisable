@@ -12,7 +12,7 @@ class User:
         self.lastname = self.user_attributes.lastName
         self.email = self.user_attributes.emailAddress
         self.displayname = self.user_attributes.displayName
-        self.domain = self.email.split('@')[1]
+        self.domain = self.email.split('@')[1] if self.email and '@' in self.email else self.email
 
 class UserAttributes:
     def __init__(self, user_attrib_json):

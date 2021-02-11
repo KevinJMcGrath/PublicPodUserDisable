@@ -16,18 +16,21 @@ def run_main():
     csv_path = 'C:/Users/Kevin/Downloads/public_pod_disable_users_2021-02-12.csv'
     userIds_from_csv = csv_import.loader.import_csv_users(csv_path)
 
-    users_for_update = {}
+    logging.info(f"Disabling {len(userIds_from_csv)} users.")
 
-    for user in user_list:
-        if user.id in userIds_from_csv:
-            payload = {
+    index = 0
+    for userId in userIds_from_csv:
+        logging.info(f'{index} - Disabling userId {userId}')
+        result = sym_client.Admin.update_user_status(user_id=userId)
 
-            }
-            users_for_update[user.id] = payload
+        if result != 'OK':
+            logging.error(f'Error updating {userId}: {result}')
 
-    for uid, payload in users_for_update.items():
-        logging.info(f'Updating user Id: {uid} - setting Division to Symphony')
-        sym_client.Admin.update_user(user_id=uid, payload=payload)
+        index += 1
+
+    # for uid, payload in users_for_update.items():
+    #     logging.info(f'Updating user Id: {uid} - setting Division to Symphony')
+    #     sym_client.Admin.update_user(user_id=uid, payload=payload)
 
     logging.info('Done!')
 

@@ -45,15 +45,14 @@ class APIBase:
                 return None
 
         except requests.exceptions.HTTPError as http_ex:
-            logging.error(http_ex)
+            logging.error(f"HTTP Error - status_code: {response.status_code} - response: {response.text}")
+            logging.exception(http_ex)
 
-            if http_ex.response and http_ex.response.text:
-                logging.error(http_ex.response.text)
 
             raise http_ex
         except requests.exceptions.ConnectionError as conn_ex:
-            logging.error(conn_ex)
+            logging.exception(conn_ex)
             raise conn_ex
         except Exception as ex:
-            logging.error(ex)
+            logging.exception(ex)
             raise ex
